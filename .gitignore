@@ -1,2 +1,5 @@
 
 *.tif
+.ipynb_checkpoints/Elevation_Evaluation-checkpoint.ipynb
+*.ipynb
+.ipynb_checkpoints/Elevation_Evaluation-checkpoint.ipynb

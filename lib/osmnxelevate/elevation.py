@@ -5,7 +5,7 @@ Description: Package to bind elevation to OSM road network - nodes and edges
 """
 
 import os
-import sys
+import warnings
 import shutil
 import osmnx as ox
 import geopandas as gpd
@@ -36,6 +36,7 @@ class NetworkDataset:
         self.output_fpath = output_fpath
         print(f"Current working directory changed to {output_fpath}")
         os.chdir(output_fpath)
+        warnings.simplefilter(action="ignore", category=UserWarning)
         
     def _save_geopackage(self):
         """Function to extract geopackage from OSM to a folder"""
@@ -43,13 +44,13 @@ class NetworkDataset:
             if not isinstance(self.place, str):
                 raise TypeError("Place input has to be comma seperated string")
             # Load the graph based on 'drive' network
-            graph = ox.graph_from_place(self.place, network_type='drive')
+            graph = ox.graph_from_place(self.place, network_type="drive")
             # Saves nodes, edges as shapefiles into the folder
-            dir_path = self.place.split(',')[0]
+            dir_path = f"{self.place.split(',')[0]}.gpkg"
             fpath = os.path.join(self.output_fpath, dir_path)
             if os.path.exists(fpath):
                 shutil.rmtree(fpath)
-            ox.save_graph_shapefile(graph, fpath)
+            ox.save_graph_geopackage(graph, filepath= fpath)
             return fpath
         except TypeError as e:
             print(f"{str(e)}")
@@ -58,13 +59,11 @@ class NetworkDataset:
         """Function to read nodes and edges shapefile from local folder path"""
         gdf_dict = {}
         fpath = self._save_geopackage()
-        for file in os.listdir(fpath):
-            if "nodes" in file and file.endswith(".shp"):
-                gdf = gpd.read_file(os.path.join(fpath,file))
-                gdf_dict["nodes"] = gdf.to_crs(3857)
-            if "edges" in file and file.endswith(".shp"):
-                gdf = gpd.read_file(os.path.join(fpath,file))
-                gdf_dict["edges"] = gdf.to_crs(3857)
+        if os.path.exists(fpath) and fpath.endswith(".gpkg"):
+            node_gdf = gpd.read_file(fpath, layer="nodes")
+            edge_gdf = gpd.read_file(fpath, layer="edges")
+            gdf_dict["nodes"] = node_gdf.to_crs(3857)
+            gdf_dict["edges"] = edge_gdf.to_crs(3857)
         return gdf_dict
 
     def _extract_raster_bounds(self):
@@ -97,7 +96,7 @@ class NetworkDataset:
             return node_gdf
         except AttributeError as e:
             print(f"{str(e)}")
-            
+
     def bind_elevation_to_nodes(self):
         """Function to bind elevation to nodes geodataframe"""
         node_gdf = self._append_raster_fname()
@@ -122,19 +121,19 @@ class NetworkDataset:
         gdf_dict = self._read_geopackage()
         edge_gdf = gdf_dict["edges"]
         node_gdf = self.bind_elevation_to_nodes()
-
+        merged_gdf = gpd.GeoDataFrame()
         # Perform a join operation on the 'osmid' column
-        merged_gdf = node_gdf.merge(edge_gdf, left_on="from", right_on="osmid", how="left")
+        merged_gdf = edge_gdf.merge(node_gdf, left_on="from", right_on="osmid", how="left")
         # Assuming 'elev' is the elevation column in node_gdf
-        merged_gdf["from_elev"] = merged_gdf["elev"]  
-
+        merged_gdf["from_elev"] = merged_gdf["elev"]
+        
         col_list = list(merged_gdf.columns.values)
         col = [item for item in col_list if item.endswith("_y")]
         col_elev = [item for item in col_list if item.startswith("elev")]
 
         merged_gdf = merged_gdf.drop(labels=col, axis=1)
         merged_gdf = merged_gdf.drop(labels=col_elev, axis=1)
-
+    
         rename_dict = {}
         for col in col_list:
             if col.endswith("_x"):
@@ -161,5 +160,8 @@ class NetworkDataset:
                 rename_dict[col] = rename_col
 
         merged_gdf = merged_gdf.rename(columns = rename_dict)
-        merged_gdf.to_file("egde_network.shp")
-        print(f"Saved edge network to file path {os.getcwd()} egde_network.shp")
+        geometry = merged_gdf["geometry"]
+        df = merged_gdf.drop("geometry", axis=1)
+        gdf = gpd.GeoDataFrame(df, crs="EPSG:3857", geometry=geometry)
+        gdf.to_file("egde_network.gpkg", driver="GPKG", layer="edges")
+        print(f"Saved edge network to file path {os.getcwd()} egde_network.gpkg")
