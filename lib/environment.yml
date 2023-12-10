@@ -1,0 +1,14 @@
+name: oxelev
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - ipython
+  - jupyter
+  - gdal
+  - pip
+  - geopandas==0.14.0
+  - osmnx==1.8.0
+  - rioxarray==0.15.0
+  - Shapely==2.0.2

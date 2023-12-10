@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "osmnxelevate"
+version = "0.0.1"
+authors = [
+  { name="Siddharth Ramavajjala", email="siddharthrcs@gmail.com" },
+]
+description = "Python package to bind elevation to nodes and edges to create network dataset"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+"geopandas==0.14.0",
+"osmnx==1.8.0",
+"rioxarray==0.15.0",
+"Shapely==2.0.2"
+]
+
+[options]
+packages = ["osmnxelevate"]
+
+[project.urls]
+"Homepage" = "https://github.com/Sidrcs/Elevation_OSM"
+"Bug Tracker" = "https://github.com/Sidrcs/Elevation_OSM/issues" 

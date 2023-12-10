@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: osmnxelevate
+Version: 0.0.1
+Summary: Python package to bind elevation to nodes and edges to create network dataset
+Author-email: Siddharth Ramavajjala <siddharthrcs@gmail.com>
+Project-URL: Homepage, https://github.com/Sidrcs/Elevation_OSM
+Project-URL: Bug Tracker, https://github.com/Sidrcs/Elevation_OSM/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: geopandas==0.14.0
+Requires-Dist: osmnx==1.8.0
+Requires-Dist: rioxarray==0.15.0
+Requires-Dist: Shapely==2.0.2
+
+# Elevation_OSM
+ To create road network with elevation
