@@ -6,7 +6,6 @@ Description: Package to bind elevation to OSM road network - nodes and edges
 
 import os
 import warnings
-import shutil
 import osmnx as ox
 import geopandas as gpd
 import rioxarray as rxr
@@ -175,4 +174,4 @@ class NetworkDataset:
         reclass_dict = {"from_elev": float, "to_elev":float}
         gdf = gdf.astype(reclass_dict)
         gdf.to_file("edge_network.gpkg", driver="GPKG", layer="edges")
-        print(f"Saved edge network to file path {os.getcwd()} egde_network.shp")
+        print(f"Saved edge network to file path {os.getcwd()} egde_network.gpkg")
