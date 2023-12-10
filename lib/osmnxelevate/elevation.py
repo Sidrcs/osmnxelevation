@@ -45,12 +45,12 @@ class NetworkDataset:
                 raise TypeError("Place input has to be comma seperated string")
             # Load the graph based on 'drive' network
             graph = ox.graph_from_place(self.place, network_type="drive")
-            # Saves nodes, edges as shapefiles into the folder
-            dir_path = f"{self.place.split(',')[0]}.gpkg"
-            fpath = os.path.join(self.output_fpath, dir_path)
+            # Saves geopackage to output folder path
+            gpkg_path = f"{self.place.split(',')[0]}.gpkg"
+            fpath = os.path.join(self.output_fpath, gpkg_path)
             if os.path.exists(fpath):
-                shutil.rmtree(fpath)
-            ox.save_graph_geopackage(graph, filepath= fpath)
+                os.remove(fpath)
+            ox.save_graph_geopackage(graph, filepath=fpath)
             return fpath
         except TypeError as e:
             print(f"{str(e)}")
@@ -59,9 +59,13 @@ class NetworkDataset:
         """Function to read nodes and edges shapefile from local folder path"""
         gdf_dict = {}
         fpath = self._save_geopackage()
+        # Check if geopackage exists
         if os.path.exists(fpath) and fpath.endswith(".gpkg"):
+            # Reads 'nodes' layer from geopackage 
             node_gdf = gpd.read_file(fpath, layer="nodes")
+            # Reads 'edges' layer from geopackage
             edge_gdf = gpd.read_file(fpath, layer="edges")
+            # Reprojects both GeoDataFrames to EPSG:3857 into a dictionary
             gdf_dict["nodes"] = node_gdf.to_crs(3857)
             gdf_dict["edges"] = edge_gdf.to_crs(3857)
         return gdf_dict
@@ -69,12 +73,16 @@ class NetworkDataset:
     def _extract_raster_bounds(self):
         """Function extracts raster bounds and returns a dictionary in EPSG: 3857"""
         bounds = {}
+        # Opens raster files in the folder path
         for file in os.listdir(self.raster_fpath):
             if file.endswith(".tif"):
+                # Raster file path as key for the bounds dictionary
                 fpath = os.path.join(self.raster_fpath, file)
                 raster = rxr.open_rasterio(fpath)
+                # Reprojects raster to EPSG:3857
                 reproj_raster = raster.rio.reproject(3857)
                 bbox = reproj_raster.rio.bounds()
+                # Shapely box object as value for bounds dictionary
                 bbox = box(bbox[0], bbox[3], bbox[2], bbox[1])
                 bounds[fpath] = bbox
         return bounds
@@ -163,5 +171,8 @@ class NetworkDataset:
         geometry = merged_gdf["geometry"]
         df = merged_gdf.drop("geometry", axis=1)
         gdf = gpd.GeoDataFrame(df, crs="EPSG:3857", geometry=geometry)
-        gdf.to_file("egde_network.gpkg", driver="GPKG", layer="edges")
-        print(f"Saved edge network to file path {os.getcwd()} egde_network.gpkg")
+        # To avoid conversion issues created due to inconsistent dtypes
+        reclass_dict = {"from_elev": float, "to_elev":float}
+        gdf = gdf.astype(reclass_dict)
+        gdf.to_file("edge_network.gpkg", driver="GPKG", layer="edges")
+        print(f"Saved edge network to file path {os.getcwd()} egde_network.shp")
