@@ -5,6 +5,7 @@ Description: Package to bind elevation to OSM road network - nodes and edges
 """
 
 import os
+import sys
 import shutil
 import osmnx as ox
 import geopandas as gpd
@@ -16,7 +17,7 @@ ox.settings.use_cache=True
 
 
 class NetworkDataset:
-    """NetworkDataset """
+    """NetworkDataset manages OSMNx module and appends elevation to edge network"""
     def __init__(self, place, raster_fpath, output_fpath):
         """NetworkDataset is initialized
         
@@ -81,15 +82,22 @@ class NetworkDataset:
     
     def _append_raster_fname(self):
         """Function appends raster file path if a point is within a raster bounds"""
-        gdf_dict = self._read_geopackage()
-        node_gdf = gdf_dict["nodes"]
-        node_gdf["fname"] = None
-        bounds_dict = self._extract_raster_bounds()
-        for file_name, polygon in bounds_dict.items():
-            within_polygon = node_gdf["geometry"].within(polygon)
-            node_gdf.loc[within_polygon, "fname"] = file_name
-        return node_gdf
-    
+        try:
+            gdf_dict = self._read_geopackage()
+            node_gdf = gdf_dict["nodes"]
+            node_gdf["fname"] = None
+            bounds_dict = self._extract_raster_bounds()
+            for file_name, polygon in bounds_dict.items():
+                within_polygon = node_gdf["geometry"].within(polygon)
+                node_gdf.loc[within_polygon, "fname"] = file_name
+            if None in list(node_gdf["fname"].unique()):
+                none_gdf = node_gdf[node_gdf["fname"].isnull()]
+                osmid = list(none_gdf["osmid"])
+                raise AttributeError(f"Cannot perform elevation bind. Raster bounds not found for {len(osmid)} points for coordinates range {none_gdf['x'].min(), none_gdf['y'].min(), none_gdf['x'].max(), none_gdf['y'].max()}")
+            return node_gdf
+        except AttributeError as e:
+            print(f"{str(e)}")
+            
     def bind_elevation_to_nodes(self):
         """Function to bind elevation to nodes geodataframe"""
         node_gdf = self._append_raster_fname()
