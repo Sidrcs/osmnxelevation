@@ -29,5 +29,5 @@ dependencies = [
 packages = ["osmnxelevate"]
 
 [project.urls]
-"Homepage" = "https://github.com/Sidrcs/Elevation_OSM"
-"Bug Tracker" = "https://github.com/Sidrcs/Elevation_OSM/issues" 
+"Homepage" = "https://github.com/Sidrcs/osmnxelevation"
+"Bug Tracker" = "https://github.com/Sidrcs/osmnxelevation/issues" 
