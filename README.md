@@ -2,7 +2,7 @@
 **OSMnxElevation** is a lightweight Python package that binds elevation from raster datasets to nodes and edges of OpenStreetMaps (OSM) to create input network datasets that support elevation-based network analysis like walkability and bikeability in ArcGIS Pro (ESRI 2020).
 
 ## Demo
-[Basic Demo Notebook](https://github.com/Sidrcs/osmnxelevation/blob/6d6d89f75d5714dac425f413e1f0a4ae807df43f/lib/Demo.ipynb)
+[Basic Demo Notebook](https://github.com/Sidrcs/osmnxelevation/blob/main/lib/Demo.ipynb)
 
 ## How to Install and Use
 
