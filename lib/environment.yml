@@ -6,7 +6,6 @@ dependencies:
   - python=3.9
   - ipython
   - jupyter
-  - gdal
   - pip
   - geopandas==0.14.0
   - osmnx==1.8.0
