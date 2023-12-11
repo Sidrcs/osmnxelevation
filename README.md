@@ -46,7 +46,16 @@ ndst = oe.NetworkDataset(place = "Midland, Midland County, TX, USA",
 # Binds elevation to nodes and edges
 ndst.bind_elevation_to_network()
 ```
+### Visualization
+1. The NetworkDataset module has `visualize_edges_elevation(gpkg_fpath, col_name, title)` which visualizes **from_elev** or **to_elev** columns of the **edge_network.gpkg** created from the output of the `bind_elevation_to_network()` method:
 
+```
+gpkg_fpath = "edge_network.gpkg"
+col_name = "from_elev"
+title = "Elevation model of Midland City, TX"
+ndst.visualize_edges_elevation(gpkg_fpath, col_name, title)
+```
+<img src="">
 ## Credits
 Boeing, G. 2017. "[OSMnx: New Methods for Acquiring, Constructing, Analyzing, and Visualizing Complex Street Networks](https://geoffboeing.com/publications/osmnx-complex-street-networks/)." _Computers, Environment and Urban Systems_ 65, 126-139.
 

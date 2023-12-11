@@ -217,7 +217,7 @@ class NetworkDataset:
         node_gdf = node_gdf.astype({"elev":float})
         node_gdf = node_gdf.to_crs(4326)
         node_gdf.to_file("node_network.gpkg", driver="GPKG", layer="nodes")
-        print(f"Saved edge network to file path {os.path.join(os.getcwd(), 'egde_network.gpkg')}")
+        print(f"Saved edge network to file path {os.path.join(os.getcwd(), 'edge_network.gpkg')}")
         print(f"Saved edge network to file path {os.path.join(os.getcwd(), 'node_network.gpkg')}")
     
     def visualize_edges_elevation(self, gpkg_fpath, col_name, title, fname="elevation", cmap="coolwarm"):
@@ -238,15 +238,15 @@ class NetworkDataset:
             ColorMap diverging scheme 
             default: 'coolwarm'
         """
-        if not os.path.exists(gpkg_fpath):
+        if not os.path.exists(f"{gpkg_fpath}"):
             raise FileNotFoundError(f"Input gpkg file path not found in {gpkg_fpath}")
-        gdf = gpd.read_file(gpkg_fpath)
-        if col_name not in list(gdf.column.values):
+        gdf = gpd.read_file(f"{gpkg_fpath}")
+        if col_name not in list(gdf.columns.values):
             raise AttributeError(f"{col_name} is not available. Available columns are: {list(gdf.column.values)}")
         # Desired figsize (width, height) in inches
         fig, ax = plt.subplots(figsize=(10, 5))
         # Plot the geodataframe
-        gdf.plot(ax=ax, linewidth=0.5, column={col_name}, legend=True,
+        gdf.plot(ax=ax, linewidth=0.5, column=f"{col_name}", legend=True,
                     legend_kwds={"label": f"{col_name}(m)", "orientation": "vertical"}, 
                     cmap=cmap)
         # Set plot parameters
