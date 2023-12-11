@@ -9,6 +9,7 @@ import warnings
 import osmnx as ox
 import geopandas as gpd
 import rioxarray as rxr
+import matplotlib.pyplot as plt
 from shapely.geometry import box
 ox.settings.log_console=True
 ox.settings.use_cache=True
@@ -218,3 +219,42 @@ class NetworkDataset:
         node_gdf.to_file("node_network.gpkg", driver="GPKG", layer="nodes")
         print(f"Saved edge network to file path {os.path.join(os.getcwd(), 'egde_network.gpkg')}")
         print(f"Saved edge network to file path {os.path.join(os.getcwd(), 'node_network.gpkg')}")
+    
+    def visualize_edges_elevation(self, gpkg_fpath, col_name, title, fname="elevation", cmap="coolwarm"):
+        """Function to visualize edges elevation using input geopackage file path and saves png to directory
+        
+        Parameters
+        ----------
+        gpkg_fpath: str
+            Edges geopackage file path
+        col_name: str
+            Name of the column to be visualized: 'from_elev' or 'to_elev'
+        title: str
+            Title of the edge network plot
+        fname: str, optional
+            Save filename of the plot without .png extension
+            default: 'elevation'
+        cmap: str, optional
+            ColorMap diverging scheme 
+            default: 'coolwarm'
+        """
+        if not os.path.exists(gpkg_fpath):
+            raise FileNotFoundError(f"Input gpkg file path not found in {gpkg_fpath}")
+        gdf = gpd.read_file(gpkg_fpath)
+        if col_name not in list(gdf.column.values):
+            raise AttributeError(f"{col_name} is not available. Available columns are: {list(gdf.column.values)}")
+        # Desired figsize (width, height) in inches
+        fig, ax = plt.subplots(figsize=(10, 5))
+        # Plot the geodataframe
+        gdf.plot(ax=ax, linewidth=0.5, column={col_name}, legend=True,
+                    legend_kwds={"label": f"{col_name}(m)", "orientation": "vertical"}, 
+                    cmap=cmap)
+        # Set plot parameters
+        ax.set_title(title)
+        ax.set_xlabel("Longitude")
+        ax.set_ylabel("Latitude")
+        # Saves figure to the directory
+        plt.savefig(f"{fname}.png", bbox_inches ="tight", dpi=600)
+        print(f"Plot is saved as {fname}.png")
+        # Show the plot
+        plt.show()

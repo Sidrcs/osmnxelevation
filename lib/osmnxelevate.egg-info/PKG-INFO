@@ -12,6 +12,7 @@ Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: geopandas==0.14.0
+Requires-Dist: matplotlib==3.8.0
 Requires-Dist: osmnx==1.8.0
 Requires-Dist: rioxarray==0.15.0
 Requires-Dist: Shapely==2.0.2
