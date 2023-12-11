@@ -1,5 +1,4 @@
 LICENSE
-README.md
 pyproject.toml
 osmnxelevate/__init__.py
 osmnxelevate/elevation.py
