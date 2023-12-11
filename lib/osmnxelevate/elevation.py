@@ -55,7 +55,7 @@ class NetworkDataset:
             print(f"{str(e)}")
 
     def _read_geopackage(self, fpath):
-        """Function to read nodes and edges shapefile from local folder path
+        """Function to read nodes and edges geopackage from local folder path
         
         Parameters
         ----------
@@ -160,6 +160,7 @@ class NetworkDataset:
     
     def bind_elevation_to_network(self):
         """Function to bind elevation to node and edge network"""
+        print("Executing elevation binding process........")
         fpath = self._save_geopackage()
         gdf_dict = self._read_geopackage(fpath)
         bounds_dict = self._extract_raster_bounds()
