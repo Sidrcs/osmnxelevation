@@ -1,6 +1,6 @@
 """
 Module Name: OSMnxElevation
-Description: Package to bind elevation to OSM road network - nodes and edges
+Description: Package to bind elevation to OSM road networks
 @author: Siddharth Ramavajjala
 """
 
@@ -54,10 +54,15 @@ class NetworkDataset:
         except TypeError as e:
             print(f"{str(e)}")
 
-    def _read_geopackage(self):
-        """Function to read nodes and edges shapefile from local folder path"""
+    def _read_geopackage(self, fpath):
+        """Function to read nodes and edges shapefile from local folder path
+        
+        Parameters
+        ----------
+        fpath: str
+            Geopackage file path retrieved from OSMnx graph query of place string
+        """
         gdf_dict = {}
-        fpath = self._save_geopackage()
         # Check if geopackage exists
         if os.path.exists(fpath) and fpath.endswith(".gpkg"):
             # Reads 'nodes' layer from geopackage 
@@ -86,13 +91,27 @@ class NetworkDataset:
                 bounds[fpath] = bbox
         return bounds
     
-    def _append_raster_fname(self):
-        """Function appends raster file path if a point is within a raster bounds"""
+    def _append_raster_fname(self, gdf_dict, bounds_dict):
+        """Function appends raster file path if a point is within a raster bounds
+        
+        Parameters
+        ----------
+        gdf_dict: dict
+            GeoDataFrame dictionary of nodes and edges of queried place
+                keys: 'nodes', 'edges'
+                values: nodes_gdf, edges_gdf
+        bounds_dict: dict
+            Bounding box dictionary of rasters file paths and raster bounds
+
+        Returns
+        ----------
+        node_gdf: GeoDataFrame
+            Creates a GeoDataFrame with column 'fname'
+            'fname' stores raster file paths for points if within bounds
+        """
         try:
-            gdf_dict = self._read_geopackage()
             node_gdf = gdf_dict["nodes"]
             node_gdf["fname"] = None
-            bounds_dict = self._extract_raster_bounds()
             for file_name, polygon in bounds_dict.items():
                 within_polygon = node_gdf["geometry"].within(polygon)
                 node_gdf.loc[within_polygon, "fname"] = file_name
@@ -104,9 +123,25 @@ class NetworkDataset:
         except AttributeError as e:
             print(f"{str(e)}")
 
-    def bind_elevation_to_nodes(self):
-        """Function to bind elevation to nodes geodataframe"""
-        node_gdf = self._append_raster_fname()
+    def _bind_elevation_to_nodes(self, gdf_dict, bounds_dict):
+        """Function to bind elevation to nodes geodataframe
+
+        Parameters
+        ----------
+        gdf_dict: dict
+            GeoDataFrame dictionary of nodes and edges of queried place
+                keys: 'nodes', 'edges'
+                values: nodes_gdf, edges_gdf
+        bounds_dict: dict
+            Bounding box dictionary of rasters file paths and raster bounds
+
+        Returns
+        ----------
+        node_gdf: GeoDataFrame
+            Output GeoDataFrame consists of 'elev' column which extracts elevation
+            from raster and appends it to corresponding node in meters (m)
+        """
+        node_gdf = self._append_raster_fname(gdf_dict, bounds_dict)
         node_gdf["elev"] = None
         unq_list = list(node_gdf["fname"].unique())
         raster_dict = {}
@@ -123,11 +158,13 @@ class NetworkDataset:
         node_gdf = node_gdf.drop(labels="fname", axis=1)
         return node_gdf
     
-    def bind_elevation_to_edges(self):
-        """Function to bind elevation to edge network"""
-        gdf_dict = self._read_geopackage()
+    def bind_elevation_to_network(self):
+        """Function to bind elevation to node and edge network"""
+        fpath = self._save_geopackage()
+        gdf_dict = self._read_geopackage(fpath)
+        bounds_dict = self._extract_raster_bounds()
         edge_gdf = gdf_dict["edges"]
-        node_gdf = self.bind_elevation_to_nodes()
+        node_gdf = self._bind_elevation_to_nodes(gdf_dict, bounds_dict)
         merged_gdf = gpd.GeoDataFrame()
         # Perform a join operation on the 'osmid' column
         merged_gdf = edge_gdf.merge(node_gdf, left_on="from", right_on="osmid", how="left")
@@ -173,5 +210,10 @@ class NetworkDataset:
         # To avoid conversion issues created due to inconsistent dtypes
         reclass_dict = {"from_elev": float, "to_elev":float}
         gdf = gdf.astype(reclass_dict)
+        gdf = gdf.to_crs(4326)
         gdf.to_file("edge_network.gpkg", driver="GPKG", layer="edges")
-        print(f"Saved edge network to file path {os.getcwd()} egde_network.gpkg")
+        node_gdf = node_gdf.astype({"elev":float})
+        node_gdf = node_gdf.to_crs(4326)
+        node_gdf.to_file("node_network.gpkg", driver="GPKG", layer="nodes")
+        print(f"Saved edge network to file path {os.path.join(os.getcwd(), 'egde_network.gpkg')}")
+        print(f"Saved edge network to file path {os.path.join(os.getcwd(), 'node_network.gpkg')}")
