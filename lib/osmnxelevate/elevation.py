@@ -247,7 +247,7 @@ class NetworkDataset:
         fig, ax = plt.subplots(figsize=(10, 5))
         # Plot the geodataframe
         gdf.plot(ax=ax, linewidth=0.5, column=f"{col_name}", legend=True,
-                    legend_kwds={"label": f"{col_name}(m)", "orientation": "vertical"}, 
+                    legend_kwds={"label": "Digital Elevation (m)", "orientation": "vertical"}, 
                     cmap=cmap)
         # Set plot parameters
         ax.set_title(title)
@@ -255,6 +255,6 @@ class NetworkDataset:
         ax.set_ylabel("Latitude")
         # Saves figure to the directory
         plt.savefig(f"{fname}.png", bbox_inches ="tight", dpi=600)
-        print(f"Plot is saved as {fname}.png")
+        print(f"Plot is saved as {fname}.png at {os.getcwd()}")
         # Show the plot
         plt.show()
