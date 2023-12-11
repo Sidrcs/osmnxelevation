@@ -57,6 +57,7 @@ ndst.visualize_edges_elevation(gpkg_fpath, col_name, title)
 ```
 <img src="https://github.com/Sidrcs/osmnxelevation/blob/main/elevation.png?raw=true">
 
+
 ## Credits
 Boeing, G. 2017. "[OSMnx: New Methods for Acquiring, Constructing, Analyzing, and Visualizing Complex Street Networks](https://geoffboeing.com/publications/osmnx-complex-street-networks/)." _Computers, Environment and Urban Systems_ 65, 126-139.
 
